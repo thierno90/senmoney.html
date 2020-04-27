@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ProjetExamen</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <body>         
+        <div id="login">
+            <form>
+                <h1 id="header">SenMoney</h1>
+                <input type="number" placeholder="Votre numéro de téléphone svp" id="tel" autofocus>
+                <input type="submit" id="diez" value="#221#">
+            </form>  
+        </div> 
+              
+        <script>let choix;
+let tabNumeros = ["7748634","7758811", "7801862", "7750544", "7767269"];
+let  tabComptes = [10000, 11000, 13000, 25000, 30000];
+let  tabCodes = ["0000", "1234", "1324", "1122", "4334"];
+let lesfactures = [["01","02","03"],[3274, 15056, 7231],["101", "102", "103"],[3021, 2011, 705], 0, 0];
+let pos =-1;
+let choix2;
+
+
+document.getElementById("diez").addEventListener("click", menu);
+
+
+function menu()
+{
+    pos=tabNumeros.indexOf(document.getElementById("tel").value);
+    if (pos!=-1) {
+        choix = prompt("------ MENU SENMONEY ------\n"
+                        +"Tapez le numéro du service choisi\n"
+                        +"1: Solde de mon compte\n"
+                        +"2: Transfert d'argent\n"
+                        +"3: Paiement de facture\n"
+                        +"4: Options"
+                        );
+    //console.log(choix);
+     switch (choix)
+        {
+            case "1": afficherSolde(); break;
+
+            case "2": transfertArgent(); break;
+
+            case "3": factures(); break;
+
+            case "4": opter(); break;
+
+            default: defaut();
+        }
+    } else {
+        alert("Vous devez saisir un numéro de téléphone correcte");
+    }                  
+}
+
+function defaut()
+{
+    let vide="";
+    if(choix=="") vide = "Vous n'avez pas taper un numéro.\n"
+    if(!confirm(vide+"Voulez-vous vraiment quitter ?")) menu();
+}
+
+function afficherSolde()
+{
+    let soncode = prompt("Veuillez saisir votre code secret");
+    if (soncode==tabCodes[pos]) {
+        if (confirm("Le solde de votre compte est de "+tabComptes[pos]+"F CFA"
+                +"\n Voulez-vous retourner au menu ?")) {
+        menu();
+        } 
+    } else {
+        alert("Code incorect");
+    }
+    
+}
+
+function transfertArgent()
+{
+    let dest = prompt("Le numéro du destinataire SVP");
+    let indest = tabNumeros.indexOf(dest);
+    if (indest != -1) {
+        if (prompt("Votre code secret SVP")==tabCodes[pos]) {
+            let montant = prompt("Le montant du transfert SVP");
+            if (!isNaN(montant) && montant<=tabComptes[pos] && montant>0) {
+                tabComptes[pos] -= montant;
+                tabComptes[indest] += Number(montant);
+                alert("Transfert éfectuer avec succès\nVotre solde actuel est de "+tabComptes[pos] + "F CFA");
+                enregistrer_transaction(pos, " Envoie au numéro " + dest, montant);
+                enregistrer_transaction(indest, "Réception depuis le numéro " + tabNumeros[pos], montant);
+                menu();
+            } else {
+                alert("Vous devez saisir un montant plus petit ou égal à votre solde qui est : "+tabComptes[pos]);
+            }
+        } else {
+            alert("Code secret incorrect.");
+            menu();
+        }
+    } else {
+        alert("Ce numéro n'est pas attribué");
+        menu();
+    }
+}
+
+function factures()
+{
+    choix = prompt("------ MENU FACTURES ------\n"
+                        +"Tapez le numéro du service choisi\n"
+                        +"1: Facture Sen Eau\n"
+                        +"2: Facture Sénélec\n"
+                        +"3: Retour au menu principal\n"
+                        );
+    //console.log(choix);
+     switch (choix)
+        {
+            case "1": facteau(); break;
+
+            case "2": factelect(); break;
+
+            case "3": menu(); break;
+
+            default: alert("Au revoir avec Sen Money");
+        }
+}
+
+function payer(icode,imontant,isolde){
+    let indice = lesfactures[icode].indexOf(prompt("Le code de la facture d'eau svp"));
+    if (indice!=-1) 
+    {
+        let continuer = confirm("Le montant de votre facture numéro "+lesfactures[icode][indice]
+        +" est de "+lesfactures[imontant][indice]
+        +"\nCliquez sur ok pour confirmer ");
+        if (continuer) 
+        {
+            if (prompt("Votre code secret SVP")==tabCodes[pos]) 
+            {
+                if (tabComptes[pos]>=lesfactures[imontant][indice]) 
+                {
+                    tabComptes[pos] -= lesfactures[imontant][indice];
+                    lesfactures[4] += lesfactures[imontant][indice];
+                    alert("Facture payée avec succès. Le solde de votre compte est maintenant : "
+                    +tabComptes[pos]+"F CFA");
+                    if (icode==0) {
+                        enregistrer_transaction(pos, " Facture Eau de code "
+                        +lesfactures[icode][indice], lesfactures[imontant][indice]);
+                    } else {
+                        enregistrer_transaction(pos, " Facture Electricité de code "
+                        +lesfactures[icode][indice], lesfactures[imontant][indice]);
+                    }
+                    
+                } else {
+                    alert("Votre solde est insuffisant pour payer cette facture")
+                }
+            } else{
+                alert("Code incorrecte");
+            }
+        } 
+    } else {
+        alert("Veuillez vérifier le code de votre facture. Ce code n'est pas enregistré");
+    }
+}
+
+function facteau()
+{
+    payer(0,1,4)    
+}
+
+function factelect()
+{
+    payer(2,3,5);    
+}
+
+function opter()
+{
+    if (pos!=-1) {
+        choix2 = prompt("Veuillez choisir\n"
+                        +"Tapez le numéro du service choisi\n"
+                        +"1: Solde de mon compte\n"
+                        +"2: Cinq derniers transactions\n"
+                        +"3: modifier mon code secret\n"
+                        +"4: Consultation statut\n\n"
+                        +"0: Accueil"
+                        );
+     switch (choix2)
+        {
+            case "1": afficherSolde(); break;
+
+            case "2": transactions(); break;
+
+            case "3": modifcode(); break;
+
+            case "4": monstatus(); break;
+
+            case "0": menu(); break;
+
+            default: defaut();
+        }
+    }                  
+}
+
+//tableau des cinq ojets transaction des cinq abonnés
+//chaque transaction doit être enregistré (unshift) et si le tableau de l'abonné atteint 5 enregistremets
+//on supprime le dernier (pop) puis on ajoute
+let lestransactions = [
+                        [],
+                        [],
+                        [],
+                        [],
+                        []
+                    ]
+
+function une_transaction(ladate,motif,montant,commentaire)
+{
+    this.ladate = ladate;
+    this.motif = motif;
+    this.montant = montant;
+}
+
+function enregistrer_transaction(lapos, motif, montant)
+{
+    let la_date = new Date();
+    let format_date = la_date.getDate()+"/" + la_date.getMonth() + "/" + la_date.getFullYear();
+    if (pos!=-1 && lestransactions[lapos].length<5) 
+    {
+        lestransactions[lapos].unshift(new une_transaction(format_date, motif, montant));
+    } else if (lapos!=-1 && lestransactions[lapos].length==5) {
+        lestransactions[lapos].pop();
+        lestransactions[lapos].unshift(new une_transaction(format_date, motif, montant));
+    }
+}
+
+function transactions()
+{
+    let mes_trans = lestransactions[pos];
+    if (mes_trans.length==0) 
+    {
+        alert("Aucune transaction effectuée dans ce compte.");
+    } else {
+        let taille = mes_trans.length;
+        let contenu = "Vos " + taille + " dernières transaction (s)\n";
+
+        for (let index = 0; index < taille; index++) {
+            contenu += mes_trans[index].ladate +"  ; " + mes_trans[index].motif + " de " + mes_trans[index].montant + "F CFA\n";            
+        }
+        alert(contenu);
+    }
+}
+
+//vérifier l'actuel code, puis demander deux fois le nouveau et commparer ces deux nouveaux avant de modifier
+function modifcode()
+{
+    if (tabCodes.indexOf(prompt("Votre actuel code secret SVP."))!=-1) {
+        nouv_code = prompt("Votre nouveau code SVP.");
+        if (nouv_code==prompt("Confirmer votre nouveau code SVP.")) {
+            tabCodes[pos] = nouv_code;
+            alert("Code modifié avec succès.");
+        } else {
+             if (confirm("Vos nouveaux codes ne sont pas identiques, voulez vous recommencer ?")) {
+                modifcode();
+             }                        
+        }
+    } else {
+        alert("Code secret incorrecte.");
+    }
+}
+
+//Jusqu'a quel montant le compte peut transactionner et proposition de modif
+function monstatus()
+{
+    alert("Votre compte actuel ne peut avoir pour solde maximal 200 000 F CFA.\n"
+    +"Pour changer votre status actuel, rendez-vous dans nos agences SenMoney.");
+}
+
+
+
+</script>        
+    </body>
+</html>
